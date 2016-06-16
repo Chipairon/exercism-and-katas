@@ -14,10 +14,15 @@ class Romans
   IS_ARABIC = /^(?:[123]\d{3}|[1-9]\d{0,2})$/
 
   def initialize
-    construct_roman_table
   end
 
-  def construct_roman_table
+  def roman_table
+    roman_table_inverted
+  end
+
+  def roman_table_original
+    return @roman_table if @roman_table
+
     roman_map = {
       1    => "I",
       4    => "IV",
@@ -34,21 +39,51 @@ class Romans
       1000 => "M"
     }
 
-    @@roman_table = Array.new(3999) do |index|
+    @roman_table = Array.new(3999) do |index|
       target = index + 1
-      roman_map.keys.sort { |a, b| b <=> a }.inject("") do |roman, div|
+      roman_value = roman_map.keys.sort { |a, b| b <=> a }.inject("") do |accumulator, div|
         times, target = target.divmod(div)
-        roman << roman_map[div] * times
+        accumulator << roman_map[div] * times
       end
+      roman_value
+    end
+  end
+
+  def roman_table_inverted
+    return @roman_table if @roman_table
+
+    roman_map = {
+      1000 => "M",
+      900  => "CM",
+      500  => "D",
+      400  => "CD",
+      100  => "C",
+      90   => "XC",
+      50   => "L",
+      40   => "XL",
+      10   => "X",
+      9    => "IX",
+      5    => "V",
+      4    => "IV",
+      1    => "I"
+    }
+
+    @roman_table = Array.new(3999) do |index|
+      target = index + 1
+      roman_value = roman_map.keys.inject("") do |accumulator, div|
+        times, target = target.divmod(div)
+        accumulator << roman_map[div] * times
+      end
+      roman_value
     end
   end
 
   def to_roman str
-    @@roman_table.index(str) + 1
+    roman_table.index(str) + 1
   end
 
   def to_arabic str
-    @@roman_table[str.to_i - 1]
+    roman_table[str.to_i - 1]
   end
 
   def convert str
