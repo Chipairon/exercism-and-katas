@@ -17,7 +17,7 @@ class Romans
   end
 
   def roman_table
-    roman_table_inverted
+    roman_table_with_partial_memory
   end
 
   def roman_table_original
@@ -47,6 +47,7 @@ class Romans
       end
       roman_value
     end
+    @roman_table
   end
 
   def roman_table_inverted
@@ -76,6 +77,115 @@ class Romans
       end
       roman_value
     end
+    @roman_table
+  end
+
+  def roman_table_keys_outside
+    return @roman_table if @roman_table
+
+    roman_map = {
+      1000 => "M",
+      900  => "CM",
+      500  => "D",
+      400  => "CD",
+      100  => "C",
+      90   => "XC",
+      50   => "L",
+      40   => "XL",
+      10   => "X",
+      9    => "IX",
+      5    => "V",
+      4    => "IV",
+      1    => "I"
+    }
+
+    keys = roman_map.keys
+    @roman_table = Array.new(3999) do |index|
+      target = index + 1
+      roman_value = keys.inject("") do |accumulator, div|
+        times, target = target.divmod(div)
+        accumulator << roman_map[div] * times
+      end
+      roman_value
+    end
+    @roman_table
+  end
+
+  def roman_table_stopping_loop
+    return @roman_table if @roman_table
+
+    roman_map = {
+      1000 => "M",
+      900  => "CM",
+      500  => "D",
+      400  => "CD",
+      100  => "C",
+      90   => "XC",
+      50   => "L",
+      40   => "XL",
+      10   => "X",
+      9    => "IX",
+      5    => "V",
+      4    => "IV",
+      1    => "I"
+    }
+
+    keys = roman_map.keys
+    @roman_table = Array.new(3999) do |index|
+      target = index + 1
+      roman_value = keys.inject("") do |accumulator, div|
+        if div > target
+          accumulator
+        else
+          times, target = target.divmod(div)
+          accumulator << roman_map[div] * times
+        end
+      end
+      roman_value
+    end
+    @roman_table
+  end
+
+  def roman_table_with_partial_memory
+    return @roman_table if @roman_table
+
+    roman_map = {
+      1000 => "M",
+      900  => "CM",
+      500  => "D",
+      400  => "CD",
+      100  => "C",
+      90   => "XC",
+      50   => "L",
+      40   => "XL",
+      10   => "X",
+      9    => "IX",
+      5    => "V",
+      4    => "IV",
+      1    => "I"
+    }
+
+    keys = roman_map.keys
+    @roman_table = []
+    (0..3998).each do |index|
+      target = index + 1
+      roman_value = ""
+      keys.each do |div|
+        if div > target
+          next
+        else
+          if @roman_table[target-1]
+            roman_value << @roman_table[target-1]
+            break
+          else
+            times, target = target.divmod(div)
+            roman_value << roman_map[div] * times
+          end
+        end
+      end
+      @roman_table << roman_value
+    end
+    @roman_table
   end
 
   def to_roman str
@@ -88,8 +198,10 @@ class Romans
 
   def convert str
     case str
-    when IS_ROMAN  then puts to_roman(str)
-    when IS_ARABIC then puts to_arabic(str)
+    when IS_ROMAN
+      to_roman(str)
+    when IS_ARABIC
+      to_arabic(str)
     else raise "Invalid input:  #{str}"
     end
   end
@@ -99,7 +211,7 @@ if __FILE__ == $0
   romans = Romans.new
   ARGF.each_line() do |line|
     line.chomp!
-    romans.convert line
+    puts romans.convert line
   end
 end
 
