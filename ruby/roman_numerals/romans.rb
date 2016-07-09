@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# Read the whole story at https://rubendiazjorge.me/2016/07/09/roman-numerals-performance/
 #---
 # Excerpted from "Best of Ruby Quiz"
 # We make no guarantees that this code is fit for any purpose. 
@@ -13,11 +14,12 @@ class Romans
                  (?:IX|VI{0,3}|IV|I{0,3}) $ /ix
   IS_ARABIC = /^(?:[123]\d{3}|[1-9]\d{0,2})$/
 
-  def initialize
+  def initialize(implementation)
+    @implementation = implementation
   end
 
   def roman_table
-    roman_table_with_partial_memory
+    send @implementation
   end
 
   def roman_table_original
@@ -111,7 +113,7 @@ class Romans
     @roman_table
   end
 
-  def roman_table_stopping_loop
+  def roman_table_no_unnecessary_ops
     return @roman_table if @roman_table
 
     roman_map = {
@@ -135,7 +137,7 @@ class Romans
       target = index + 1
       roman_value = keys.inject("") do |accumulator, div|
         if div > target
-          accumulator
+          next
         else
           times, target = target.divmod(div)
           accumulator << roman_map[div] * times
